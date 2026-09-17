@@ -30,6 +30,13 @@ practice app with timed modes, instant explanations, and progress tracking.
 5. **Seed questions:** `npm run db:seed`
 6. **Run:** `npm run dev` → http://localhost:3000
 
+> Network note: `prisma generate` downloads engine binaries. If your network blocks
+> that download, pre-place the engines and point Prisma at them:
+> `PRISMA_SCHEMA_ENGINE_BINARY=/path/to/schema-engine`
+> `PRISMA_QUERY_ENGINE_LIBRARY=/path/to/libquery_engine.so.node`
+> (matching your Prisma version's commit hash under `~/.cache/prisma`). This is not
+> needed on Vercel.
+
 Admin: open `/admin` and enter your `ADMIN_TOKEN`.
 
 ## Environment variables
