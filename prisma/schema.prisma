@@ -1,0 +1,70 @@
+// Prisma schema for the SAT/ACT tutoring site.
+// Database: PostgreSQL (works with local Postgres, Neon, Supabase, or Vercel Postgres).
+// Quick start without migrations: `npx prisma db push` then `npm run db:seed`.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  createdAt    DateTime  @default(now())
+  sessions     Session[]
+  attempts     Attempt[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Question {
+  id           String   @id @default(cuid())
+  subject      String   // sat-math | act-math | sat-reading-writing | act-english
+  domain       String   // official content domain, e.g. "Algebra"
+  difficulty   String   @default("medium") // easy | medium | hard
+  prompt       String   @db.Text
+  choices      Json?    // string[] for multiple-choice; null for grid-in
+  correctIndex Int?     // index into choices for multiple-choice
+  correctText  String   // canonical correct answer (also used for grid-in checking)
+  explanation  String   @db.Text
+  createdAt    DateTime @default(now())
+  attempts     Attempt[]
+
+  @@index([subject, domain])
+}
+
+model Attempt {
+  id         String   @id @default(cuid())
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  correct    Boolean
+  timeMs     Int?
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Inquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  test      String   // SAT | ACT | Both | Not sure
+  message   String   @db.Text
+  status    String   @default("new") // new | contacted | closed
+  createdAt DateTime @default(now())
+}
