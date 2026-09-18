@@ -71,6 +71,7 @@ export default function PracticeClient({
   // Timestamp-based timer: immune to background-tab throttling, so timed sets stay honest.
   const deadlineRef = useRef<number | null>(null);
   const warnedRef = useRef({ five: false, one: false });
+  const finishedRef = useRef(false);
 
   const timed = typeof mode === "number";
 
@@ -84,15 +85,21 @@ export default function PracticeClient({
     }).catch(() => {});
   }, [answers]);
 
+  // Guard: the interval can fire as the set ends — finish exactly once
+  // so attempts are never double-posted.
+  const finishOnce = useCallback(() => {
+    if (finishedRef.current) return;
+    finishedRef.current = true;
+    finish();
+  }, [finish]);
+
   // Timer — derived from a deadline timestamp so switching tabs can't pause the clock.
   // Warns at 5 minutes and 1 minute remaining, like test day.
+  // Uses setInterval (not chained setTimeout): when the computed remaining time is
+  // unchanged, React skips the re-render, which would otherwise break the chain.
   useEffect(() => {
     if (phase !== "answering" || !timed || deadlineRef.current === null) return;
-    if (secondsLeft !== null && secondsLeft <= 0) {
-      finish();
-      return;
-    }
-    const t = setTimeout(() => {
+    const tick = () => {
       const remain = Math.max(0, Math.ceil((deadlineRef.current! - Date.now()) / 1000));
       setSecondsLeft(remain);
       if (remain <= 300 && remain > 60 && !warnedRef.current.five) {
@@ -102,9 +109,12 @@ export default function PracticeClient({
         warnedRef.current.one = true;
         setTimeWarning("1 minute remaining — finish your current question!");
       }
-    }, 500);
-    return () => clearTimeout(t);
-  }, [phase, timed, secondsLeft, finish]);
+      if (remain <= 0) finishOnce();
+    };
+    tick();
+    const id = setInterval(tick, 500);
+    return () => clearInterval(id);
+  }, [phase, timed, finishOnce]);
 
   async function start() {
     setLoading(true);
@@ -136,6 +146,7 @@ export default function PracticeClient({
       setGridAnswer("");
       setTimeWarning(null);
       warnedRef.current = { five: false, one: false };
+      finishedRef.current = false;
       if (timed) {
         const minutes = TIMED_PRESETS[subjectId][mode as number].minutes;
         deadlineRef.current = Date.now() + minutes * 60 * 1000;
@@ -169,7 +180,7 @@ export default function PracticeClient({
 
   function next() {
     if (index + 1 >= questions.length) {
-      finish();
+      finishOnce();
       return;
     }
     setIndex((i) => i + 1);
