@@ -139,7 +139,9 @@ export default function Home() {
         </p>
       </section>
 
-      {/* Testimonials placeholder */}
+      {/* TESTIMONIALS HIDDEN — the quotes below are placeholders. Send real student
+          feedback and I'll publish this section with their results. */}
+      {/*
       <section className="space-y-6">
         <h2 className="text-3xl font-extrabold tracking-tight">Student results</h2>
         <div className="grid gap-5 md:grid-cols-3">
@@ -152,10 +154,11 @@ export default function Home() {
               <p className="text-2xl font-extrabold text-brand-700">{big}</p>
               <p className="mt-3 text-sm italic text-slate-600">“{quote}”</p>
               <p className="mt-2 text-xs text-slate-400">{who} — replace with real student feedback</p>
-            </div>
-          ))}
+          </div>
+        ))}
         </div>
       </section>
+      */}
 
       {/* FAQ */}
       <section className="space-y-6">

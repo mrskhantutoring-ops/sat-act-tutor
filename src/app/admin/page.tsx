@@ -129,6 +129,14 @@ export default function Admin() {
     loadAll();
   }
 
+  async function logout() {
+    await fetch("/api/admin/logout", { method: "POST" });
+    setUnlocked(false);
+    setToken("");
+    setQuestions([]);
+    setInquiries([]);
+  }
+
   async function setInquiryStatus(id: string, status: string) {
     await fetch(`/api/admin/inquiries/${id}`, {
       method: "PATCH",
@@ -164,13 +172,18 @@ export default function Admin() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-extrabold tracking-tight">Admin</h1>
-        <div className="flex gap-2">
-          {(["questions", "inquiries"] as const).map((t) => (
-            <button key={t} onClick={() => setTab(t)}
-              className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab === t ? "bg-brand-600 text-white" : "bg-white text-slate-600 border"}`}>
-              {t === "questions" ? `Questions (${questions.length})` : `Inquiries (${inquiries.length})`}
-            </button>
-          ))}
+        <div className="flex items-center gap-2">
+          <div className="flex gap-2">
+            {(["questions", "inquiries"] as const).map((t) => (
+              <button key={t} onClick={() => setTab(t)}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold ${tab === t ? "bg-brand-600 text-white" : "bg-white text-slate-600 border"}`}>
+                {t === "questions" ? `Questions (${questions.length})` : `Inquiries (${inquiries.length})`}
+              </button>
+            ))}
+          </div>
+          <button onClick={logout} className="rounded-xl px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100">
+            Log out
+          </button>
         </div>
       </div>
       {msg && <p className="text-sm text-green-700">{msg}</p>}

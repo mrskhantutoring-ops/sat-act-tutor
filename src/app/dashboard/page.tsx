@@ -112,6 +112,7 @@ export default function Dashboard() {
             <span className="font-semibold">{r.question.subject}</span>
             <span className="text-slate-500"> · {r.question.domain} · </span>
             <span className="text-slate-600">{r.question.prompt.slice(0, 80)}…</span>
+            <span className="text-slate-400"> · {new Date(r.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}</span>
           </div>
         ))}
       </section>

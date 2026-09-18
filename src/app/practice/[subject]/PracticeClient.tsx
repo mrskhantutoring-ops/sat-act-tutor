@@ -63,9 +63,14 @@ export default function PracticeClient({
   const [checked, setChecked] = useState(false);
   const [answers, setAnswers] = useState<{ id: string; correct: boolean; timeMs: number }[]>([]);
   const [secondsLeft, setSecondsLeft] = useState<number | null>(null);
+  const [timeWarning, setTimeWarning] = useState<string | null>(null);
+  const [shortNotice, setShortNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const questionStart = useRef<number>(Date.now());
+  // Timestamp-based timer: immune to background-tab throttling, so timed sets stay honest.
+  const deadlineRef = useRef<number | null>(null);
+  const warnedRef = useRef({ five: false, one: false });
 
   const timed = typeof mode === "number";
 
@@ -79,14 +84,25 @@ export default function PracticeClient({
     }).catch(() => {});
   }, [answers]);
 
-  // Timer
+  // Timer — derived from a deadline timestamp so switching tabs can't pause the clock.
+  // Warns at 5 minutes and 1 minute remaining, like test day.
   useEffect(() => {
-    if (phase !== "answering" || !timed || secondsLeft === null) return;
-    if (secondsLeft <= 0) {
+    if (phase !== "answering" || !timed || deadlineRef.current === null) return;
+    if (secondsLeft !== null && secondsLeft <= 0) {
       finish();
       return;
     }
-    const t = setTimeout(() => setSecondsLeft((s) => (s === null ? s : s - 1)), 1000);
+    const t = setTimeout(() => {
+      const remain = Math.max(0, Math.ceil((deadlineRef.current! - Date.now()) / 1000));
+      setSecondsLeft(remain);
+      if (remain <= 300 && remain > 60 && !warnedRef.current.five) {
+        warnedRef.current.five = true;
+        setTimeWarning("5 minutes remaining — keep your pace.");
+      } else if (remain <= 60 && remain > 0 && !warnedRef.current.one) {
+        warnedRef.current.one = true;
+        setTimeWarning("1 minute remaining — finish your current question!");
+      }
+    }, 500);
     return () => clearTimeout(t);
   }, [phase, timed, secondsLeft, finish]);
 
@@ -104,13 +120,30 @@ export default function PracticeClient({
         setError("No questions found for these filters yet — try widening them.");
         return;
       }
+      const requested = timed ? TIMED_PRESETS[subjectId][mode as number].count : count;
+      if (data.questions.length < requested) {
+        setShortNotice(
+          `Heads up: only ${data.questions.length} question${data.questions.length === 1 ? "" : "s"} matched your filters (this mode asks for ${requested}). Starting a shorter set — more questions are on the way.`
+        );
+      } else {
+        setShortNotice(null);
+      }
       setQuestions(data.questions);
       setIndex(0);
       setAnswers([]);
       setChecked(false);
       setSelected(null);
       setGridAnswer("");
-      setSecondsLeft(timed ? TIMED_PRESETS[subjectId][mode as number].minutes * 60 : null);
+      setTimeWarning(null);
+      warnedRef.current = { five: false, one: false };
+      if (timed) {
+        const minutes = TIMED_PRESETS[subjectId][mode as number].minutes;
+        deadlineRef.current = Date.now() + minutes * 60 * 1000;
+        setSecondsLeft(minutes * 60);
+      } else {
+        deadlineRef.current = null;
+        setSecondsLeft(null);
+      }
       questionStart.current = Date.now();
       setPhase("answering");
     } catch (e) {
@@ -253,6 +286,18 @@ export default function PracticeClient({
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
+      {shortNotice && (
+        <div className="flex items-start justify-between gap-3 rounded-xl bg-amber-50 p-4 text-sm text-amber-800">
+          <p>{shortNotice}</p>
+          <button className="shrink-0 font-bold" onClick={() => setShortNotice(null)} aria-label="Dismiss">✕</button>
+        </div>
+      )}
+      {timeWarning && (
+        <div className="flex items-start justify-between gap-3 rounded-xl bg-brand-50 p-4 text-sm font-semibold text-brand-800">
+          <p>⏰ {timeWarning}</p>
+          <button className="shrink-0 font-bold" onClick={() => setTimeWarning(null)} aria-label="Dismiss">✕</button>
+        </div>
+      )}
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold text-slate-500">
           Question {index + 1} of {questions.length} · {q.domain} · {q.difficulty}

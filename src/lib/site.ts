@@ -13,18 +13,18 @@ export const site = {
   pricing: [
     {
       name: "Single Session",
-      price: "$XX",
+      price: "Contact for rates",
       features: ["60-minute 1-on-1 session", "SAT or ACT focus", "Homework plan after every session"],
     },
     {
       name: "4-Session Pack",
-      price: "$XXX",
+      price: "Contact for rates",
       features: ["Four 60-minute sessions", "Personalized study plan", "Practice sets between sessions", "Progress check-ins"],
       featured: true,
     },
     {
       name: "Test-Day Sprint",
-      price: "$XXX",
+      price: "Contact for rates",
       features: ["Eight 60-minute sessions", "Full practice-test reviews", "Pacing & anxiety strategies", "Score-goal tracking"],
     },
   ],
