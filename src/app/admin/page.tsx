@@ -44,6 +44,7 @@ export default function Admin() {
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [form, setForm] = useState(emptyForm);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -138,8 +139,8 @@ export default function Admin() {
   }
 
   async function removeInquiry(id: string) {
-    if (!confirm("Delete this inquiry?")) return;
     await fetch(`/api/admin/inquiries/${id}`, { method: "DELETE" });
+    setConfirmDeleteId(null);
     loadAll();
   }
 
@@ -268,7 +269,14 @@ export default function Admin() {
                 {iq.status === "closed" && (
                   <button className="btn-secondary !px-3 !py-1.5 text-sm" onClick={() => setInquiryStatus(iq.id, "new")}>Reopen</button>
                 )}
-                <button className="rounded-xl border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50" onClick={() => removeInquiry(iq.id)}>Delete</button>
+                {confirmDeleteId === iq.id ? (
+                  <>
+                    <button className="rounded-xl bg-red-600 px-3 py-1.5 text-sm font-semibold text-white hover:bg-red-700" onClick={() => removeInquiry(iq.id)}>Confirm delete</button>
+                    <button className="btn-secondary !px-3 !py-1.5 text-sm" onClick={() => setConfirmDeleteId(null)}>Cancel</button>
+                  </>
+                ) : (
+                  <button className="rounded-xl border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50" onClick={() => setConfirmDeleteId(iq.id)}>Delete</button>
+                )}
               </div>
             </div>
           ))}
