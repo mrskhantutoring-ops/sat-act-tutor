@@ -28,7 +28,7 @@ Developer settings → Personal access tokens → Generate new token with `repo`
    - `DATABASE_URL` — your PostgreSQL connection string (Neon/Supabase/Vercel Postgres).
      Use the **pooled** URL if your provider gives you one.
    - `ADMIN_TOKEN` — a long random string (`openssl rand -hex 32`). This unlocks `/admin`.
-   - `NEXT_PUBLIC_SITE_NAME` — e.g. `Faryal Tutoring`.
+   - `NEXT_PUBLIC_SITE_NAME` — e.g. `Pro Minds`.
 4. Click **Deploy**.
 
 ## 4. Seed the question bank (one time)

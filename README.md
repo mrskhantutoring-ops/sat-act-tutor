@@ -1,6 +1,6 @@
 # SAT & ACT Tutoring Website
 
-A full-stack tutoring website for **Faryal Tutoring**: marketing landing pages plus a free
+A full-stack tutoring website for **Pro Minds**: marketing landing pages plus a free
 practice app with timed modes, instant explanations, and progress tracking.
 
 - **Frontend:** Next.js 14 (App Router) + React 18 + Tailwind CSS

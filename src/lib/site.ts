@@ -1,9 +1,9 @@
-// Central site configuration. Faryal: edit the placeholders marked TODO
+// Central site configuration. Edit the placeholders marked TODO
 // with your real details (email, booking link, prices) before publishing.
 
 export const site = {
-  name: process.env.NEXT_PUBLIC_SITE_NAME || "Faryal Tutoring",
-  tutorName: "Faryal",
+  name: process.env.NEXT_PUBLIC_SITE_NAME || "Pro Minds",
+  tutorName: "Pro Minds",
   tagline: "1-on-1 SAT & ACT coaching that meets you where you are.",
   // TODO: replace with your real contact email
   email: "hello@example.com",
