@@ -128,6 +128,21 @@ export default function Admin() {
     loadAll();
   }
 
+  async function setInquiryStatus(id: string, status: string) {
+    await fetch(`/api/admin/inquiries/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    loadAll();
+  }
+
+  async function removeInquiry(id: string) {
+    if (!confirm("Delete this inquiry?")) return;
+    await fetch(`/api/admin/inquiries/${id}`, { method: "DELETE" });
+    loadAll();
+  }
+
   if (unlocked === null) return <p className="text-slate-500">Checking admin access…</p>;
   if (!unlocked)
     return (
@@ -243,6 +258,18 @@ export default function Admin() {
               </div>
               <p className="mt-2 whitespace-pre-wrap text-slate-600">{iq.message}</p>
               <p className="mt-2 text-xs text-slate-400">{new Date(iq.createdAt).toLocaleString()}</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {iq.status === "new" && (
+                  <button className="btn-secondary !px-3 !py-1.5 text-sm" onClick={() => setInquiryStatus(iq.id, "contacted")}>Mark contacted</button>
+                )}
+                {iq.status === "contacted" && (
+                  <button className="btn-secondary !px-3 !py-1.5 text-sm" onClick={() => setInquiryStatus(iq.id, "closed")}>Mark closed</button>
+                )}
+                {iq.status === "closed" && (
+                  <button className="btn-secondary !px-3 !py-1.5 text-sm" onClick={() => setInquiryStatus(iq.id, "new")}>Reopen</button>
+                )}
+                <button className="rounded-xl border border-red-200 px-3 py-1.5 text-sm font-semibold text-red-600 hover:bg-red-50" onClick={() => removeInquiry(iq.id)}>Delete</button>
+              </div>
             </div>
           ))}
         </div>
